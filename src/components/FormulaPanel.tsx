@@ -1,4 +1,4 @@
-import { BlockMath } from "react-katex";
+import katex from "katex";
 
 type Props = {
   expr: string;
@@ -13,26 +13,57 @@ type Props = {
 };
 
 function fmt(n: number) {
-  return Number.isFinite(n) ? n.toFixed(6) : "NaN";
+  if (!Number.isFinite(n)) return "NaN";
+  return n.toFixed(6);
+}
+
+function MathBlock({ math }: { math: string }) {
+  const html = katex.renderToString(math, {
+    throwOnError: false,
+    displayMode: true,
+  });
+
+  return <div dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
 export default function FormulaPanel({ expr, derivativeExpr, step }: Props) {
+  const functionMath = `f(x) = ${expr || "\\text{invalid}"}`;
+  const derivativeMath = `f'(x) = ${derivativeExpr || "\\text{invalid}"}`;
+  const generalNewtonMath = `x_{n+1} = x_n - \\frac{f(x_n)}{f'(x_n)}`;
+
+  const substitutedMath = step
+    ? `x_{${step.n + 1}} = ${fmt(step.xn)} - \\frac{${fmt(step.fxn)}}{${fmt(step.dfxn)}}`
+    : "";
+
+  const approxMath = step
+    ? `x_{${step.n + 1}} \\approx ${fmt(step.nextX)}`
+    : "";
+
   return (
-    <div className="rounded border p-4 space-y-4 bg-white">
+    <div className="space-y-4">
       <h2 className="text-xl font-semibold">Newton&apos;s Method</h2>
 
-      <BlockMath math={`f(x) = ${expr}`} />
-      <BlockMath math={`f'(x) = ${derivativeExpr || "\\text{invalid}"}`} />
-      <BlockMath math={`x_{n+1} = x_n - \\frac{f(x_n)}{f'(x_n)}`} />
+      <div className="overflow-x-auto">
+        <MathBlock math={functionMath} />
+      </div>
+
+      <div className="overflow-x-auto">
+        <MathBlock math={derivativeMath} />
+      </div>
+
+      <div className="overflow-x-auto">
+        <MathBlock math={generalNewtonMath} />
+      </div>
 
       {step && (
         <>
-          <BlockMath
-            math={`x_{${step.n + 1}} = ${fmt(step.xn)} - \\frac{${fmt(step.fxn)}}{${fmt(step.dfxn)}}`}
-          />
-          <BlockMath
-            math={`x_{${step.n + 1}} \\approx ${fmt(step.nextX)}`}
-          />
+          <div className="overflow-x-auto">
+            <MathBlock math={substitutedMath} />
+          </div>
+
+          <div className="overflow-x-auto">
+            <MathBlock math={approxMath} />
+          </div>
         </>
       )}
     </div>

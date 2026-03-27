@@ -4,7 +4,7 @@ import "nerdamer/Calculus";
 export function compileFunction(expr: string) {
   const f = (x: number) => {
     try {
-      return nerdamer(expr, { x }).evaluate().text();
+      return nerdamer(expr, { x: String(x) }).evaluate().text();
     } catch {
       return NaN;
     }
